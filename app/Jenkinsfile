@@ -7,6 +7,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -15,19 +16,25 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh "docker build -t ${IMAGE}:${TAG} -t ${IMAGE}:latest ."
+                dir('app') {
+                    sh "docker build -t ${IMAGE}:${TAG} -t ${IMAGE}:latest ."
+                }
             }
         }
 
         stage('Push to GHCR') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'ghcr-creds',
-                                 usernameVariable: 'GH_USER',
-                                 passwordVariable: 'GH_TOKEN')]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'ghcr-creds',
+                        usernameVariable: 'GH_USER',
+                        passwordVariable: 'GH_TOKEN'
+                    )
+                ]) {
                     sh '''
-                      echo $GH_TOKEN | docker login ghcr.io -u $GH_USER --password-stdin
-                      docker push ${IMAGE}:${TAG}
-                      docker push ${IMAGE}:latest
+                        echo $GH_TOKEN | docker login ghcr.io -u $GH_USER --password-stdin
+                        docker push ${IMAGE}:${TAG}
+                        docker push ${IMAGE}:latest
                     '''
                 }
             }
@@ -35,10 +42,14 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'aws-creds',
-                                 usernameVariable: 'AWS_ACCESS_KEY_ID',
-                                 passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    dir('terraform') {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'aws-creds',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    )
+                ]) {
+                    dir('app/terraform') {
                         sh 'terraform init -input=false'
                         sh 'terraform apply -auto-approve -input=false'
                     }
@@ -48,7 +59,7 @@ pipeline {
 
         stage('Show Output') {
             steps {
-                dir('terraform') {
+                dir('app/terraform') {
                     sh 'terraform output'
                 }
             }
