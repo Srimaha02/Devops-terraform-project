@@ -41,10 +41,11 @@ Developer
         Docker Container
               ↓
           Web App
+```
 
 ## 🛠️ Technologies & Why They Are Used
 
-- **Github** – Stores the source code and manages version control.
+- **GitHub** – Stores the source code and manages version control.
 - **Jenkins** – Automates the CI/CD pipeline.
 - **Docker** – Packages the application into a portable container.
 - **GHCR** – Stores and distributes the Docker image.
@@ -54,11 +55,13 @@ Developer
 - **Nginx** – Serves the web application.
 - **Git** – Tracks changes in the project.
 
+---
 
-☁️ AWS Architecture
+## ☁️ AWS Architecture
 
 The project creates a custom VPC with two public subnets in different Availability Zones.
 
+```text
                  AWS VPC
               11.0.0.0/16
                     │
@@ -75,56 +78,74 @@ The project creates a custom VPC with two public subnets in different Availabili
           └─────────┬─────────┘
                     ↓
                 Web Browser
+```
 
-Why two subnets and Availability Zones?
+### Why two subnets and Availability Zones?
+
 The EC2 instances are placed in different Availability Zones to provide basic fault isolation instead of keeping both servers in the same location.
 
-🔄 How the Project Works
-1. Code → GitHub
+---
+
+## 🔄 How the Project Works
+
+### 1. Code → GitHub
+
 - The application code, Dockerfile, Jenkinsfile and Terraform configuration are stored in GitHub.
 - Git provides version control and GitHub acts as the central repository.
 
-2. GitHub → Jenkins
+### 2. GitHub → Jenkins
+
 - Jenkins checks out the latest project code and starts the pipeline.
 
-3. Jenkins → Docker
+### 3. Jenkins → Docker
+
 - Jenkins builds the application into a Docker image.
 
+```text
 index.html
     ↓
 Dockerfile
     ↓
 Docker Image
+```
 
 This makes the application portable and allows it to run consistently across environments.
 
-4. Docker → GHCR
+### 4. Docker → GHCR
+
 - The generated image is pushed to GitHub Container Registry (GHCR).
 
+```text
 Docker Image
      ↓
 GHCR
      ↓
 ghcr.io/srimaha02/vpc-docker-app
+```
 
 - GHCR acts as the central place to store the container image.
 
-5. Jenkins → Terraform → AWS
+### 5. Jenkins → Terraform → AWS
+
 - Jenkins runs Terraform to create the required AWS infrastructure.
 
 Terraform creates:
+
 - VPC
 - Internet Gateway
 - Public Subnets
 - Route Table
 - Security Group
 - EC2 Instances
+
 This avoids manually creating each AWS resource.
 
-6. EC2 → Docker Container
-- Docker is installed automatically on the EC2 instances using user_data.sh.
+### 6. EC2 → Docker Container
+
+- Docker is installed automatically on the EC2 instances using `user_data.sh`.
 - The application image can then be pulled from GHCR and run as a container.
 
+```text
 EC2
  ↓
 Docker
@@ -136,9 +157,13 @@ Nginx Container
 Port 80
  ↓
 Web Browser
+```
 
-📂 Project Structure
+---
 
+## 📂 Project Structure
+
+```text
 Devops-terraform-project/
 └── app/
     ├── Dockerfile
@@ -155,24 +180,29 @@ Devops-terraform-project/
         ├── ec2.tf
         ├── user_data.sh
         └── outputs.tf
+```
 
-Terraform Files
+### Terraform Files
 
- Each Terraform file has a specific responsibility:
-- provider.tf → AWS provider and region
-- vpc.tf → Creates the VPC
-- igw.tf → Creates Internet Gateway
-- subnet.tf → Creates the two public subnets
-- route_table.tf → Provides internet routing
-- sg.tf → Controls SSH and HTTP access
-- ec2.tf → Creates the EC2 instances
-- user_data.sh → Installs and starts Docker
-- outputs.tf → Displays useful resource IDs and public IPs
+Each Terraform file has a specific responsibility:
 
-🔄 Jenkins Pipeline
+- `provider.tf` → AWS provider and region
+- `vpc.tf` → Creates the VPC
+- `igw.tf` → Creates Internet Gateway
+- `subnet.tf` → Creates the two public subnets
+- `route_table.tf` → Provides internet routing
+- `sg.tf` → Controls SSH and HTTP access
+- `ec2.tf` → Creates the EC2 instances
+- `user_data.sh` → Installs and starts Docker
+- `outputs.tf` → Displays useful resource IDs and public IPs
 
-- The Jenkins pipeline is defined in Jenkinsfile.
+---
 
+## 🔄 Jenkins Pipeline
+
+The Jenkins pipeline is defined in `Jenkinsfile`.
+
+```text
 Checkout
    ↓
 Docker Build
@@ -184,33 +214,55 @@ Terraform Init
 Terraform Apply
    ↓
 Show Terraform Output
+```
 
-- This allows the Docker image creation and AWS infrastructure provisioning to be performed consistently through Jenkins.
+This allows the Docker image creation and AWS infrastructure provisioning to be performed consistently through Jenkins.
 
-🌐 Application
+---
 
-- The application is a simple Nginx web page.
-- After the container is running:
-- docker run -d --name vpc-app -p 80:80 \
-- ghcr.io/srimaha02/vpc-docker-app:latest
+## 🌐 Application
 
-- The application can be accessed using:
-       http://<EC2-PUBLIC-IP>
+The application is a simple Nginx web page.
 
-🔐 **Security**
+After the container is running:
+
+```bash
+docker run -d --name vpc-app -p 80:80 \
+ghcr.io/srimaha02/vpc-docker-app:latest
+```
+
+The application can be accessed using:
+
+```text
+http://<EC2-PUBLIC-IP>
+```
+
+---
+
+## 🔐 Security
 
 The EC2 Security Group allows:
-- 22 → SSH access
-- 80 → HTTP access
+
+- **22** → SSH access
+- **80** → HTTP access
+
 Secrets such as AWS credentials and GitHub tokens are stored in Jenkins credentials rather than committed to the repository.
 
-⚠️ Current Scope
+---
 
-- The current Jenkins pipeline automates:
-- Docker image build → GHCR push → Terraform infrastructure provisioning.
-- The final Docker container deployment on the EC2 instances was performed separately.
+## ⚠️ Current Scope
 
-👩‍💻 Author
-Srimahalakshmi R
-B.Tech Information Technology
+The current Jenkins pipeline automates:
+
+**Docker image build → GHCR push → Terraform infrastructure provisioning.**
+
+The final Docker container deployment on the EC2 instances was performed separately.
+
+---
+
+## 👩‍💻 Author
+
+**Srimahalakshmi R**
+
+B.Tech Information Technology  
 St. Joseph's Institute of Technology
